@@ -40,6 +40,20 @@ public class UsuarioService implements UserDetailsService {
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 		Usuario usuario = usuarioDao.findByNombre(username);
+		
+		
+		UsuarioConverter uc;
+		try {
+			uc = (UsuarioConverter)converterFactory.getConverter(UsuarioDto.class.getSimpleName());
+			LOGGER.debug("Se busco >>" + username + "<< y se encontro:" + uc.likeJson(usuario));
+		} catch (InstantiationException e) {
+			throw new UsernameNotFoundException("Error de prueba", e);
+		} catch (IllegalAccessException e) {
+			throw new UsernameNotFoundException("Error de prueba", e);
+		} catch (NoExisteConverter e) {
+			throw new UsernameNotFoundException("Error de prueba", e);
+		}
+		
 		return new User(usuario.getNombre(), usuario.getContrasenia(),
 						usuario.isActivo(), usuario.isActivo(), usuario.isActivo(), usuario.isActivo(),
 						buildgrante(usuario.getRol()));

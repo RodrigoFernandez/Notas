@@ -1,13 +1,19 @@
 package com.notas.core.configuration;
 
+import java.util.Arrays;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.notas.core.service.UsuarioService;
 
@@ -32,7 +38,10 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
 	
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		http.csrf().disable().authorizeRequests()
+		http
+		.cors()
+		.and()
+		.csrf().disable().authorizeRequests()
 		.antMatchers(URL_LOGIN).permitAll() //permite el acceso al login para todos
 		.anyRequest().authenticated() //cualquier peticion que no sea login requiere autenticacion
 		.and()
@@ -40,5 +49,35 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
 							UsernamePasswordAuthenticationFilter.class) //las peticiones de login pasan antes por este filtro, en UsernamePasswordAuthenticationFilter se define que "/login" usa "POST"
 		.addFilterBefore(new JwtFilter(),
 							UsernamePasswordAuthenticationFilter.class); //el resto de las peticiones pasan antes por este filtro para validar el token
+	}
+	
+	/**
+	 * Para evitar problemas de CORS en la prueba del servidor rest con el cliente rest en la misma maquina.
+	 * https://docs.spring.io/spring-security/site/docs/5.2.x/reference/html/web-app-security.html#cors
+	 * */
+	@Bean
+	CorsConfigurationSource corsConfigurationSource() {
+		CorsConfiguration config = new CorsConfiguration();
+		config.addAllowedOrigin("http://127.0.0.1:5000");
+		
+		config.addAllowedMethod("HEAD");
+		config.addAllowedMethod("PUT");
+		config.addAllowedMethod("POST");
+		config.addAllowedMethod("DELETE");
+		config.addAllowedMethod("GET");
+		config.addAllowedMethod("PATCH");
+		
+		config.addAllowedOrigin("*");
+		config.addAllowedHeader("*");
+		
+		config.setAllowCredentials(true);
+		
+		config.setAllowedHeaders(Arrays.asList("Accept", "Authorization", "Cache-Control", "Content-Type"));
+		
+		config.setExposedHeaders(Arrays.asList("Accept", "accept", "Authorization", "authorization"));
+		
+		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+		source.registerCorsConfiguration("/**", config);
+		return source;
 	}
 }

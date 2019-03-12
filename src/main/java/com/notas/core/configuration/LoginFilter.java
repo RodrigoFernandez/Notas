@@ -9,6 +9,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -20,18 +22,20 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.notas.core.dto.usuario.UsuarioLogin;
 
 public class LoginFilter extends AbstractAuthenticationProcessingFilter {
-
+	private static final Logger LOGGER = LoggerFactory.getLogger(LoginFilter.class);
+	
 	public LoginFilter(String url, AuthenticationManager authenticationManager) {
 		super(new AntPathRequestMatcher(url));
 		setAuthenticationManager(authenticationManager);
 	}
-
+	
 	@Override
 	public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
 			throws AuthenticationException, IOException, ServletException {
 		InputStream body = request.getInputStream();
 		
 		UsuarioLogin usuario = new ObjectMapper().readValue(body, UsuarioLogin.class);
+		LOGGER.debug(usuario.toString());
 		
 		return getAuthenticationManager().authenticate(
 				new UsernamePasswordAuthenticationToken(usuario.getNombre(),

@@ -28,4 +28,9 @@ public class UsuarioLogin {
 	public void setContrasenia(String contrasenia) {
 		this.contrasenia = contrasenia;
 	}
+	
+	@Override
+	public String toString() {
+		return "<nombre: " + nombre + " | contrasenia: " + contrasenia + ">";
+	}
 }
